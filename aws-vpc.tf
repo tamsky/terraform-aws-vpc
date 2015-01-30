@@ -16,10 +16,6 @@ output "aws_vpc_id" {
 	value = "${var.aws_vpc_id}"
 }
 
-resource "aws_internet_gateway" "default" {
-	vpc_id = "${var.aws_vpc_id}"
-}
-
 output "aws_internet_gateway_id" {
 	value = "${var.aws_internet_gateway_id}"
 }
