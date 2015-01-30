@@ -4,20 +4,20 @@ provider "aws" {
 	region = "${var.aws_region}"
 }
 
-resource "aws_vpc" "default" {
-	cidr_block = "${var.network}.0.0/16"
-	enable_dns_hostnames = "true"
-	tags {
-		Name = "${var.aws_vpc_name}"
-	}
-}
+#resource "aws_vpc" "default" {
+#	cidr_block = "${var.network}.0.0/16"
+#	enable_dns_hostnames = "true"
+#	tags {
+#		Name = "${var.aws_vpc_name}"
+#	}
+#}
 
 output "aws_vpc_id" {
-	value = "${aws_vpc.default.id}"
+	value = "${var.aws_vpc_id}"
 }
 
 resource "aws_internet_gateway" "default" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 }
 
 output "aws_internet_gateway_id" {
@@ -30,7 +30,7 @@ output "aws_internet_gateway_id" {
 resource "aws_security_group" "nat" {
 	name = "nat"
 	description = "Allow services from the private subnet through NAT"
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 
 	ingress {
 		from_port = 22
@@ -94,7 +94,7 @@ resource "aws_eip" "nat" {
 # Public subnets
 
 resource "aws_subnet" "bastion" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 	cidr_block = "${var.network}.0.0/24"
 	tags {
 		Name = "${var.aws_vpc_name}-bastion"
@@ -112,7 +112,7 @@ output "aws_subnet_bastion_availability_zone" {
 # Routing table for public subnets
 
 resource "aws_route_table" "public" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 
 	route {
 		cidr_block = "0.0.0.0/0"
@@ -132,7 +132,7 @@ resource "aws_route_table_association" "bastion-public" {
 # Private subsets
 
 resource "aws_subnet" "microbosh" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 	cidr_block = "${var.network}.1.0/24"
 	availability_zone = "${aws_subnet.bastion.availability_zone}"
 	tags {
@@ -147,7 +147,7 @@ output "aws_subnet_microbosh_id" {
 # Routing table for private subnets
 
 resource "aws_route_table" "private" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 
 	route {
 		cidr_block = "0.0.0.0/0"
@@ -167,7 +167,7 @@ resource "aws_route_table_association" "microbosh-private" {
 resource "aws_security_group" "bastion" {
 	name = "bastion"
 	description = "Allow SSH traffic from the internet"
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${var.aws_vpc_id}"
 
 	ingress {
 		from_port = 22

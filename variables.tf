@@ -18,6 +18,8 @@ variable "aws_vpc_name" {
   default = "cf-vpc"
 }
 
+variable "aws_vpc_id" {}
+
 variable "aws_ubuntu_ami" {
     default = {
         us-east-1 = "ami-98aa1cf0"
