@@ -21,7 +21,7 @@ resource "aws_internet_gateway" "default" {
 }
 
 output "aws_internet_gateway_id" {
-	value = "${aws_internet_gateway.default.id}"
+	value = "${var.aws_internet_gateway_id}"
 }
 
 
@@ -116,7 +116,7 @@ resource "aws_route_table" "public" {
 
 	route {
 		cidr_block = "0.0.0.0/0"
-		gateway_id = "${aws_internet_gateway.default.id}"
+		gateway_id = "${var.aws_internet_gateway_id}"
 	}
 }
 

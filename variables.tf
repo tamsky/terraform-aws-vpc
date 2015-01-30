@@ -19,6 +19,7 @@ variable "aws_vpc_name" {
 }
 
 variable "aws_vpc_id" {}
+variable "aws_internet_gateway_id" {}
 
 variable "aws_ubuntu_ami" {
     default = {
