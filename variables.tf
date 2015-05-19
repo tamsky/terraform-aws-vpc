@@ -22,7 +22,7 @@ variable "aws_ubuntu_ami" {
     default = {
         us-east-1 = "ami-98aa1cf0"
         us-west-1 = "ami-736e6536"
-        us-west-2 = "ami-37501207"
+        us-west-2 = "ami-3389b803"
         ap-northeast-1 = "ami-df4b60de"
         ap-southeast-1 = "ami-2ce7c07e"
         ap-southeast-2 = "ami-1f117325"
