@@ -17,7 +17,10 @@ destroy:
 clean:
 	rm -f terraform.tfplan
 	rm -f terraform.tfstate
-
+	@rm -f graph.png
 
 test:
 	./scripts/testPlan
+
+graph:
+	terraform graph | dot -T png > graph.png
