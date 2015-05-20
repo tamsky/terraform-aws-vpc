@@ -47,8 +47,7 @@ resource "aws_instance" "internal" {
 	key_name = "${var.aws_key_name}"
 	security_groups = ["${aws_security_group.internal.id}"]
 	subnet_id = "${aws_subnet.app.id}"
-# only on NAT gateways:
-#	associate_public_ip_address = true
+	associate_public_ip_address = false
 	source_dest_check = true
 	tags {
 		Name = "internal"
