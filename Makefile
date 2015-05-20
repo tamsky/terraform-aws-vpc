@@ -1,5 +1,11 @@
 .PHONY: all plan apply destroy
+
+# the most important line in any shell script
 SHELL := $(SHELL) -e
+
+# use to print variable contents from the command line, eg: 'make print-SHELL'
+print-%: ; @echo $*=$($*)
+
 
 all: plan apply
 
