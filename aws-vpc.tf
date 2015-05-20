@@ -4,20 +4,15 @@ provider "aws" {
 	region = "${var.aws_region}"
 }
 
-resource "aws_vpc" "default" {
-	cidr_block = "${var.network}.0.0/16"
-	enable_dns_hostnames = "true"
-	tags {
-		Name = "${var.aws_vpc_name}"
-	}
-}
-
-output "aws_vpc_id" {
-	value = "${aws_vpc.default.id}"
+module "aws-vpc" {
+  source = "./aws_vpc"
+  cidr_prefix="${var.aws_vpc_network}"
+  prefix = "${var.prefix}"
+  vpc_name = "${var.aws_vpc_name}"
 }
 
 resource "aws_internet_gateway" "default" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${module.aws-vpc.id}"
 }
 
 output "aws_internet_gateway_id" {
@@ -54,7 +49,7 @@ resource "aws_instance" "internal" {
 	subnet_id = "${aws_subnet.app.id}"
 # only on NAT gateways:
 #	associate_public_ip_address = true
-#	source_dest_check = false
+	source_dest_check = true
 	tags {
 		Name = "internal"
 	}
@@ -63,8 +58,8 @@ resource "aws_instance" "internal" {
 # Public subnets
 
 resource "aws_subnet" "bastion" {
-	vpc_id = "${aws_vpc.default.id}"
-	cidr_block = "${var.network}.0.0/24"
+	vpc_id = "${module.aws-vpc.id}"
+	cidr_block = "${var.aws_vpc_network}.0.0/24"
 	tags {
 		Name = "${var.aws_vpc_name}-bastion"
 	}
@@ -81,12 +76,15 @@ output "aws_subnet_bastion_availability_zone" {
 # Routing table for public subnets
 
 resource "aws_route_table" "public" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${module.aws-vpc.id}"
 
 	route {
 		cidr_block = "0.0.0.0/0"
 		gateway_id = "${aws_internet_gateway.default.id}"
 	}
+        tags {
+             Name = "public route table"
+        }
 }
 
 output "aws_route_table_public_id" {
@@ -101,8 +99,8 @@ resource "aws_route_table_association" "bastion-public" {
 # Private subnets
 
 resource "aws_subnet" "app" {
-	vpc_id = "${aws_vpc.default.id}"
-	cidr_block = "${var.network}.1.0/24"
+	vpc_id = "${module.aws-vpc.id}"
+	cidr_block = "${var.aws_vpc_network}.1.0/24"
 	availability_zone = "${aws_subnet.bastion.availability_zone}"
 	tags {
 		Name = "${var.aws_vpc_name}-app"
@@ -116,12 +114,15 @@ output "aws_subnet_app_id" {
 # Routing table for private subnets
 
 resource "aws_route_table" "private" {
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${module.aws-vpc.id}"
 
 	route {
 		cidr_block = "0.0.0.0/0"
 		instance_id = "${aws_instance.bastion.id}"
 	}
+        tags {
+             Name = "private route table"
+        }
 }
 
 output "aws_route_table_private_id" {
@@ -140,7 +141,7 @@ resource "aws_route_table_association" "app-private" {
 resource "aws_security_group" "bastion" {
 	name = "bastion"
 	description = "Allow SSH traffic, and tcp/NAT from the internet"
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${module.aws-vpc.id}"
 
 	ingress {
         from_port = 0
@@ -157,10 +158,11 @@ resource "aws_security_group" "bastion" {
         security_groups = [ "${aws_security_group.internal.id}" ]
         }
 
+        # we need to be able to NAT out:
 	egress {
         from_port = 0
-        to_port = 65535
-        protocol = "tcp"
+        to_port = 0
+        protocol = "-1"
         cidr_blocks = ["0.0.0.0/0"]
         }
 
@@ -173,20 +175,20 @@ resource "aws_security_group" "bastion" {
 resource "aws_security_group" "internal" {
 	name = "internal"
 	description = "Allow traffic within our VPC subnet"
-	vpc_id = "${aws_vpc.default.id}"
+	vpc_id = "${module.aws-vpc.id}"
 
 	ingress {
           from_port = 0
           to_port = 0
           protocol = "-1"
-          cidr_blocks = [ "${aws_vpc.default.cidr_block}" ]
+          cidr_blocks = [ "${module.aws-vpc.cidr_block}" ]
         }
 
         egress {
           from_port = 0
           to_port = 0
           protocol = "-1"
-          cidr_blocks = [ "${aws_vpc.default.cidr_block}" ]
+          cidr_blocks = [ "0.0.0.0/0" ]
         }
 
 	tags {

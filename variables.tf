@@ -10,12 +10,13 @@ variable "env_count" {
   default = 1
 }
 
-variable "network" {
+variable "aws_vpc_network" {
   default = "10.10"
+  description="VPC subnet prefix; NN.MM portion of NN.MM.0.0/16"
 }
 
 variable "aws_vpc_name" {
-  default = "cf-vpc"
+  default = "vpc"
 }
 
 variable "aws_ubuntu_ami" {
@@ -56,3 +57,5 @@ variable "aws_nat_ami" {
         sa-east-1 = "ami-8b72db96"
     }
 }
+
+variable "prefix" {}
