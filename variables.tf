@@ -49,7 +49,7 @@ variable "aws_nat_ami" {
     default = {
         us-east-1 = "ami-4c9e4b24"
         us-west-1 = "ami-1d2b2958"
-        us-west-2 = "ami-8b6912bb"
+        us-west-2 = "ami-75ae8245"
         ap-northeast-1 = "ami-49c29e48"
         ap-southeast-1 = "ami-d482da86"
         ap-southeast-2 = "ami-a164029b"
